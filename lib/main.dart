@@ -1,40 +1,47 @@
+import 'package:example_template/common/theme.dart';
 import 'package:example_template/gen/i18n/locale.dart';
-import 'package:example_template/pages/splash/splash_page.dart';
-import 'package:example_template/providers/theme_provider.dart';
+import 'package:example_template/pages/news/news_detail_page.dart';
+import 'package:example_template/pages/news/news_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
-  runApp(ProviderScope(child: TranslationProvider(child: const MyApp())));
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(TranslationProvider(child: const MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  static final GoRouter _router = GoRouter(
+    routes: [
+      GoRoute(path: '/', builder: (context, state) => const NewsPage()),
+      GoRoute(
+        path: '/detail',
+        builder: (context, state) {
+          final url = state.uri.queryParameters['url'];
+          if (url == null || url.isEmpty) {
+            return const NewsPage();
+          }
+          return NewsDetailPage(url: url);
+        },
+      ),
+    ],
+  );
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context, ref) {
-    final theme = ref.watch(themeProvider);
-    return MaterialApp(
-      title: 'Example Template',
-      navigatorObservers: [_CustomNavigatorObserver()],
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: 'DUT Student News',
       locale: TranslationProvider.of(context).flutterLocale,
       supportedLocales: AppLocaleUtils.supportedLocales,
       localizationsDelegates: [...GlobalMaterialLocalizations.delegates],
-      theme: theme,
-      home: const SplashPage(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      routerConfig: _router,
     );
-  }
-}
-
-class _CustomNavigatorObserver extends NavigatorObserver {
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPush(route, previousRoute);
-    print('Navigated to ${route.settings.name}');
-    // FirebaseAnalytics.instance.logScreenView(
-    //   screenName: route.settings.name ?? 'unknown',
-    // );
   }
 }
