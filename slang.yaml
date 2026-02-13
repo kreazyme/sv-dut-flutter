@@ -1,0 +1,6 @@
+input_directory: assets/i18n
+output_directory: lib/gen/i18n
+input_file_pattern: .json
+output_file_name: locale.dart
+timestamp: false
+statistics: false
